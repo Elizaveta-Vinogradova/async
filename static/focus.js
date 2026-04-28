@@ -24,16 +24,9 @@ async function run() {
 run();
 
 function sendRequest(url, callback) {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    callback(JSON.parse(xhr.response));
-            }
-        };
-        xhr.send();
-    })
+    return fetch(url)
+        .then(res => res.json())
+        .then(data => callback(data));
 }
 
 function reqsToMap(requisites) {
