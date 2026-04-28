@@ -6,30 +6,33 @@ const API = {
 };
 
 async function run() {
-    await sendRequest(API.organizationList, (orgOgrns) => {
-        const ogrns = orgOgrns.join(",");
-        sendRequest(`${API.orgReqs}?ogrn=${ogrns}`, (requisites) => {
-            const orgsMap = reqsToMap(requisites);
-            sendRequest(`${API.analytics}?ogrn=${ogrns}`, (analytics) => {
-                addInOrgsMap(orgsMap, analytics, "analytics");
-                sendRequest(`${API.buhForms}?ogrn=${ogrns}`, (buh) => {
-                    addInOrgsMap(orgsMap, buh, "buhForms");
-                    render(orgsMap, orgOgrns);
-                });
-            });
-        });
-    });
+    const orgOgrns = await sendRequest(API.organizationList, o=>o);
+    const ogrns = orgOgrns.join(",");
+
+    const [requisites, analytics, buh]
+        = await Promise.all([
+        sendRequest(`${API.orgReqs}?ogrn=${ogrns}`, o=>o),
+        sendRequest(`${API.analytics}?ogrn=${ogrns}`, o=>o),
+        sendRequest(`${API.buhForms}?ogrn=${ogrns}`, o=>o)]
+    );
+    const orgsMap = reqsToMap(requisites);
+    addInOrgsMap(orgsMap, analytics, "analytics");
+    addInOrgsMap(orgsMap, buh, "buhForms");
+    render(orgsMap, orgOgrns);
+
 }
 
 run();
 
 function sendRequest(url, callback) {
     return fetch(url)
-        .then(res =>{if (!res.ok){
-            throw new Error(`${res.status} ${res.statusText}`);
-        }else{
-            return res.json().then(data => callback(data));
-        }}).catch(error => alert(error));
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`${res.status} ${res.statusText}`);
+            } else {
+                return res.json().then(data => callback(data));
+            }
+        }).catch(error => alert(error));
 
 }
 
@@ -82,7 +85,7 @@ function renderOrganization(orgInfo, template, container) {
                 orgInfo.buhForms[orgInfo.buhForms.length - 1].form2[0] &&
                 orgInfo.buhForms[orgInfo.buhForms.length - 1].form2[0]
                     .endValue) ||
-                0
+            0
         );
     } else {
         money.textContent = "—";
