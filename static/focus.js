@@ -11,7 +11,7 @@ async function run() {
         sendRequest(`${API.orgReqs}?ogrn=${ogrns}`, (requisites) => {
             const orgsMap = reqsToMap(requisites);
             sendRequest(`${API.analytics}?ogrn=${ogrns}`, (analytics) => {
-                addInOrgsMap(orgsMap, analytics, "analytics");
+                addInOrgsMap(orgsMap, analytics, "analitics");
                 sendRequest(`${API.buhForms}?ogrn=${ogrns}`, (buh) => {
                     addInOrgsMap(orgsMap, buh, "buhForms");
                     render(orgsMap, orgOgrns);
@@ -26,7 +26,12 @@ run();
 function sendRequest(url, callback) {
     return fetch(url)
         .then(res => res.json())
-        .then(data => callback(data));
+        .then(data => {
+            if (data["ok"] !=  true){
+                alert(data[])
+            })
+            callback(data))
+        }
 }
 
 function reqsToMap(requisites) {
